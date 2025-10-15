@@ -1,0 +1,816 @@
+/* ============================================
+   CSS Reset & Base Styles
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background: #000;
+  color: #fff;
+}
+
+/* ============================================
+   CSS Variables - Apple Design System
+   ============================================ */
+
+:root {
+  /* Apple Color Palette */
+  --apple-white: #FFFFFF;
+  --apple-light-gray: #F5F5F7;
+  --apple-off-white: #FBFBFD;
+  --apple-blue: #0071E3;
+  --apple-dark-blue: #0077ED;
+  --apple-blue-hover: #0077ED;
+  --apple-text-dark: #1D1D1F;
+  --apple-text-medium: #86868B;
+  --apple-text-light: #D2D2D7;
+  --apple-border: rgba(0, 0, 0, 0.1);
+
+  /* Legacy compatibility */
+  --bg-main: #000000;
+  --overlay-bg: rgba(255, 255, 255, 0.15);
+  --control-bg: rgba(255, 255, 255, 0.1);
+  --modal-bg: rgba(255, 255, 255, 0.95);
+  --text-primary: var(--apple-text-dark);
+  --text-secondary: var(--apple-text-medium);
+  --accent: var(--apple-blue);
+  --button-hover: rgba(255, 255, 255, 1.0);
+  --button-bg: var(--apple-white);
+  --button-bg-hover: var(--apple-light-gray);
+  --primary-color: var(--apple-blue);
+  --primary-hover: var(--apple-blue-hover);
+
+  /* Apple Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+
+  /* Apple Transitions */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   App Container
+   ============================================ */
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.screen {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================================
+   Background Tiles Animation
+   ============================================ */
+
+.background-tiles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  filter: none;
+  opacity: 0.4;
+}
+
+.tile-row {
+  display: flex;
+  width: fit-content;
+  margin-bottom: 8px;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.tile-row.scroll-left {
+  animation-name: scroll-left;
+  animation-duration: 600s; /* 10分 - 超ゆっくり */
+}
+
+.tile-row.scroll-right {
+  animation-name: scroll-right;
+  animation-duration: 600s; /* 10分 - 超ゆっくり */
+}
+
+.tile-item {
+  width: 200px;
+  height: 200px;
+  margin-right: 8px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+@keyframes scroll-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* 設定画面を背景の上に表示 */
+#setup-screen,
+#slideshow-screen {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================
+   Setup Screen (Initial Settings)
+   ============================================ */
+
+#setup-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  /* 背景を透明にして、背景タイルが見えるようにする */
+}
+
+.setup-modal {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  padding: 48px;
+  border-radius: 20px;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.setup-modal h1 {
+  font-size: 48px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+  color: var(--apple-text-dark);
+  letter-spacing: -0.5px;
+}
+
+.setup-modal .subtitle {
+  text-align: center;
+  color: var(--apple-text-medium);
+  margin-bottom: 24px;
+  font-size: 17px;
+  font-weight: 400;
+}
+
+.setup-modal #start-slideshow {
+  margin-bottom: 32px;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.section h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--apple-border);
+  color: var(--apple-text-dark);
+  letter-spacing: -0.3px;
+}
+
+/* ============================================
+   Form Elements
+   ============================================ */
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--apple-light-gray);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.checkbox-group label:hover {
+  background: var(--apple-white);
+  border-color: var(--apple-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+.checkbox-group span {
+  font-size: 16px;
+  color: var(--apple-text-dark);
+  font-weight: 400;
+}
+
+.album-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.setting-item {
+  margin-bottom: 24px;
+}
+
+.setting-item label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: var(--apple-text-dark);
+  font-weight: 500;
+}
+
+.setting-item .icon {
+  margin-right: 8px;
+}
+
+/* Duration Bar Selector */
+.duration-bar-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.duration-btn {
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  background: var(--apple-light-gray);
+  color: var(--apple-text-dark);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  letter-spacing: -0.2px;
+}
+
+.duration-btn:hover {
+  background: var(--apple-white);
+  border-color: var(--apple-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.duration-btn.selected {
+  background: var(--apple-blue);
+  color: white;
+  border-color: var(--apple-blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.duration-btn.selected:hover {
+  background: var(--apple-blue-hover);
+  border-color: var(--apple-blue-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.duration-btn:active {
+  transform: scale(0.98);
+}
+
+.setting-item input[type="range"] {
+  width: 100%;
+  height: 4px;
+  background: var(--apple-light-gray);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.setting-item input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--apple-white);
+  border: 2px solid var(--apple-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
+}
+
+.setting-item input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.setting-item input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--apple-white);
+  border: 2px solid var(--apple-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
+}
+
+.setting-item input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--apple-text-medium);
+  font-weight: 400;
+}
+
+.checkbox-item label {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--apple-light-gray);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.checkbox-item label:hover {
+  background: var(--apple-white);
+  border-color: var(--apple-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+/* ============================================
+   Buttons
+   ============================================ */
+
+button {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  letter-spacing: -0.2px;
+}
+
+.btn-primary {
+  background: var(--apple-blue);
+  color: white;
+  padding: 18px 36px;
+  font-size: 17px;
+  font-weight: 600;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background: var(--apple-dark-blue);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  background: var(--apple-light-gray);
+  color: var(--apple-text-dark);
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  flex: 1;
+  border: 1px solid transparent;
+}
+
+.btn-secondary:hover {
+  background: var(--apple-white);
+  border-color: var(--apple-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:active {
+  background: var(--apple-light-gray);
+  box-shadow: none;
+}
+
+/* ============================================
+   Slideshow Screen
+   ============================================ */
+
+#slideshow-screen {
+  background: var(--bg-main);
+}
+
+.image-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+}
+
+.image-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+/* Cover mode - 画面いっぱいに表示 */
+.image-container.fill-screen img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+}
+
+.image-container img.visible {
+  opacity: 1;
+}
+
+/* Portrait Pairing Mode */
+.image-container.pair-mode {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  padding: 0 24px;
+}
+
+.image-container.pair-mode img {
+  max-height: 100vh;
+  max-width: 48%;
+}
+
+/* Portrait Pairing + Fill Screen Mode - 2枚表示しつつ画面いっぱいに */
+.image-container.pair-mode.fill-screen {
+  padding: 0;
+  gap: 0;
+}
+
+.image-container.pair-mode.fill-screen img {
+  width: 50% !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+}
+
+/* ============================================
+   Overlay (Clock, Date, Weather)
+   ============================================ */
+
+.overlay {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  padding: 16px;
+  text-align: right;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.9); /* より強いシャドウで可読性確保 */
+  pointer-events: none;
+  z-index: 100;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.clock {
+  font-size: 66px; /* 時刻：大きく */
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.date-weather-line {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.weather {
+  font-size: 20px; /* 天気：日付と同じサイズ */
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+.date-line {
+  font-size: 20px; /* 日付 */
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+/* ============================================
+   Control Bar
+   ============================================ */
+
+.controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: var(--control-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  z-index: 200;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.controls.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.control-btn {
+  width: 56px;
+  height: 56px;
+  background: var(--button-bg);
+  color: var(--text-primary);
+  font-size: 24px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.control-btn:hover {
+  background: var(--button-bg-hover);
+  transform: scale(1.1);
+}
+
+.control-btn:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Modals
+   ============================================ */
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 300;
+}
+
+.modal .modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 640px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.modal h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 28px;
+  text-align: center;
+  color: var(--apple-text-dark);
+  letter-spacing: -0.4px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 14px;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+/* TV (Large Screens) */
+@media (min-width: 1920px) {
+  .control-btn {
+    width: 64px;
+    height: 64px;
+    font-size: 28px;
+  }
+
+  .overlay {
+    right: 32px;
+    bottom: 32px;
+    padding: 20px;
+  }
+
+  .clock {
+    font-size: 80px;
+  }
+
+  .weather, .date-line {
+    font-size: 24px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .setup-modal {
+    max-width: 90%;
+    padding: 32px;
+  }
+
+  .overlay {
+    right: 16px;
+    bottom: 16px;
+    padding: 12px;
+  }
+
+  .control-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .setup-modal {
+    padding: 24px;
+  }
+
+  .section h2 {
+    font-size: 18px;
+  }
+
+  .overlay {
+    bottom: 100px;
+    right: 12px;
+    font-size: 14px;
+  }
+
+  .clock {
+    font-size: 48px;
+  }
+
+  .weather, .date-line {
+    font-size: 16px;
+  }
+
+  .controls {
+    height: 72px;
+    gap: 16px;
+  }
+
+  .control-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  /* Disable portrait pairing on mobile portrait */
+  .image-container.pair-mode {
+    flex-direction: column;
+  }
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   Accessibility
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Scrollbar Styling
+   ============================================ */
+
+.setup-modal::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.setup-modal::-webkit-scrollbar-track,
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.setup-modal::-webkit-scrollbar-thumb,
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.setup-modal::-webkit-scrollbar-thumb:hover,
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}

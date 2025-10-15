@@ -1,0 +1,57 @@
+{
+  "defaults": {
+    "albums": ["nohn", "poncho-neko"],
+    "durationSec": 60,
+    "shuffle": true,
+    "clock": true,
+    "date": true,
+    "weather": true,
+    "portraitPairing": true,
+    "fillScreen": false
+  },
+  "weather": {
+    "provider": "openweathermap",
+    "apiKey": "3447f94ea2deed5c895765779a5155e0",
+    "city": "Tokyo",
+    "units": "metric",
+    "refreshSec": 3600
+  },
+  "albums": [
+    {
+      "id": "nohn",
+      "label": "Nohn",
+      "path": "albums/Nohn/",
+      "manifestKey": "Nohn"
+    },
+    {
+      "id": "poncho-neko",
+      "label": "ぽんちょねこ",
+      "path": "albums/ぽんちょねこ/",
+      "manifestKey": "ぽんちょねこ"
+    },
+    {
+      "id": "nekonoe-daily",
+      "label": "nekonoe 日常には猫がいる",
+      "path": "albums/nekonoe 日常には猫がいる/",
+      "manifestKey": "nekonoe 日常には猫がいる"
+    },
+    {
+      "id": "nekonoe-fantasy",
+      "label": "nekonoe 猫永遠幻想",
+      "path": "albums/nekonoe 猫永遠幻想/",
+      "manifestKey": "nekonoe 猫永遠幻想"
+    },
+    {
+      "id": "beast-art",
+      "label": "畏怖の獣絵",
+      "path": "albums/畏怖の獣絵/",
+      "manifestKey": "畏怖の獣絵"
+    },
+    {
+      "id": "paper-cut",
+      "label": "切り絵latest",
+      "path": "albums/切り絵latest/",
+      "manifestKey": "切り絵latest"
+    }
+  ]
+}

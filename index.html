@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GitHub Pages上で動作する静的スライドショーWebアプリ">
+  <title>Photo Gallery</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 背景タイルアニメーション -->
+    <div id="background-tiles" class="background-tiles">
+      <!-- JavaScriptで動的生成 -->
+    </div>
+
+    <!-- 初期設定画面 -->
+    <div id="setup-screen" class="screen">
+      <div class="modal-content setup-modal">
+        <h1>🐈‍⬛ Photo Gallery</h1>
+        <p class="subtitle">アルバムを選択してスライドショーを開始</p>
+
+        <button id="start-slideshow" class="btn-primary">
+          ▶️ スライドショー開始
+        </button>
+
+        <div class="section">
+          <h2>📁 アルバム選択</h2>
+          <div id="album-checkboxes" class="checkbox-group">
+            <!-- JavaScriptで動的生成 -->
+          </div>
+          <div class="album-actions">
+            <button id="select-all-albums" class="btn-secondary">すべて選択</button>
+            <button id="deselect-all-albums" class="btn-secondary">すべて解除</button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2>⚙️ 基本設定</h2>
+
+          <div class="setting-item">
+            <label>
+              <span class="icon">🕐</span>
+              表示時間
+            </label>
+            <div class="duration-bar-selector">
+              <button class="duration-btn" data-duration="3">3秒</button>
+              <button class="duration-btn" data-duration="5">5秒</button>
+              <button class="duration-btn" data-duration="10">10秒</button>
+              <button class="duration-btn" data-duration="30">30秒</button>
+              <button class="duration-btn selected" data-duration="60">1分</button>
+              <button class="duration-btn" data-duration="120">2分</button>
+              <button class="duration-btn" data-duration="180">3分</button>
+              <button class="duration-btn" data-duration="300">5分</button>
+              <button class="duration-btn" data-duration="600">10分</button>
+            </div>
+          </div>
+
+          <div class="setting-item checkbox-item">
+            <label>
+              <input type="checkbox" id="shuffle-toggle" checked>
+              <span class="icon">🔀</span>
+              <span>シャッフル再生</span>
+            </label>
+          </div>
+
+          <div class="setting-item checkbox-item">
+            <label>
+              <input type="checkbox" id="pairing-toggle" checked>
+              <span class="icon">🖼️</span>
+              <span>縦長画像ペアリング</span>
+            </label>
+          </div>
+
+          <div class="setting-item checkbox-item">
+            <label>
+              <input type="checkbox" id="clock-toggle" checked>
+              <span class="icon">🕐</span>
+              <span>時計を表示</span>
+            </label>
+          </div>
+
+          <div class="setting-item checkbox-item">
+            <label>
+              <input type="checkbox" id="date-toggle" checked>
+              <span class="icon">📅</span>
+              <span>日付を表示</span>
+            </label>
+          </div>
+
+          <div class="setting-item checkbox-item">
+            <label>
+              <input type="checkbox" id="weather-toggle" checked>
+              <span class="icon">🌤️</span>
+              <span>天気を表示</span>
+            </label>
+          </div>
+
+          <div class="setting-item checkbox-item">
+            <label>
+              <input type="checkbox" id="fill-screen-toggle">
+              <span class="icon">🖼️</span>
+              <span>画面いっぱいに表示（余白なし）</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- スライドショー画面 -->
+    <div id="slideshow-screen" class="screen hidden">
+      <!-- 画像表示エリア -->
+      <div id="image-container" class="image-container">
+        <!-- JavaScriptで画像を動的表示 -->
+      </div>
+
+      <!-- オーバーレイ（時計・天気） -->
+      <div id="overlay" class="overlay">
+        <div id="clock" class="clock">23:45</div>
+        <div class="date-weather-line">
+          <span id="weather" class="weather">☀️ 23°C</span>
+          <span id="date-line" class="date-line">10月15日 Wed</span>
+        </div>
+      </div>
+
+      <!-- コントロールバー -->
+      <div id="controls" class="controls hidden">
+        <button id="album-btn" class="control-btn" title="アルバム選択">
+          📁
+        </button>
+        <button id="settings-btn" class="control-btn" title="設定">
+          ⚙️
+        </button>
+        <button id="prev-btn" class="control-btn" title="前へ">
+          ◀
+        </button>
+        <button id="play-pause-btn" class="control-btn" title="再生/一時停止">
+          ⏸
+        </button>
+        <button id="next-btn" class="control-btn" title="次へ">
+          ▶
+        </button>
+        <button id="fullscreen-btn" class="control-btn" title="フルスクリーン (Fキー)">
+          ⛶
+        </button>
+      </div>
+    </div>
+
+    <!-- アルバム選択モーダル -->
+    <div id="album-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>📁 アルバムを選択</h2>
+        <div id="album-modal-checkboxes" class="checkbox-group">
+          <!-- JavaScriptで動的生成 -->
+        </div>
+        <div class="album-actions">
+          <button id="modal-select-all" class="btn-secondary">すべて選択</button>
+          <button id="modal-deselect-all" class="btn-secondary">すべて解除</button>
+        </div>
+        <div class="modal-buttons">
+          <button id="cancel-album-modal" class="btn-secondary">キャンセル</button>
+          <button id="apply-album-modal" class="btn-primary">適用 ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 設定モーダル -->
+    <div id="settings-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>⚙️ 設定</h2>
+
+        <div class="setting-item">
+          <label>
+            <span class="icon">🕐</span>
+            表示時間
+          </label>
+          <div class="duration-bar-selector">
+            <button class="duration-btn modal-duration-btn" data-duration="3">3秒</button>
+            <button class="duration-btn modal-duration-btn" data-duration="5">5秒</button>
+            <button class="duration-btn modal-duration-btn" data-duration="10">10秒</button>
+            <button class="duration-btn modal-duration-btn" data-duration="30">30秒</button>
+            <button class="duration-btn modal-duration-btn selected" data-duration="60">1分</button>
+            <button class="duration-btn modal-duration-btn" data-duration="120">2分</button>
+            <button class="duration-btn modal-duration-btn" data-duration="180">3分</button>
+            <button class="duration-btn modal-duration-btn" data-duration="300">5分</button>
+            <button class="duration-btn modal-duration-btn" data-duration="600">10分</button>
+          </div>
+        </div>
+
+        <div class="setting-item checkbox-item">
+          <label>
+            <input type="checkbox" id="modal-shuffle-toggle" checked>
+            <span class="icon">🔀</span>
+            <span>シャッフル再生</span>
+          </label>
+        </div>
+
+        <div class="setting-item checkbox-item">
+          <label>
+            <input type="checkbox" id="modal-pairing-toggle" checked>
+            <span class="icon">🖼️</span>
+            <span>縦長画像ペアリング</span>
+          </label>
+        </div>
+
+        <div class="setting-item checkbox-item">
+          <label>
+            <input type="checkbox" id="modal-clock-toggle" checked>
+            <span class="icon">🕐</span>
+            <span>時計を表示</span>
+          </label>
+        </div>
+
+        <div class="setting-item checkbox-item">
+          <label>
+            <input type="checkbox" id="modal-date-toggle" checked>
+            <span class="icon">📅</span>
+            <span>日付を表示</span>
+          </label>
+        </div>
+
+        <div class="setting-item checkbox-item">
+          <label>
+            <input type="checkbox" id="modal-weather-toggle" checked>
+            <span class="icon">🌤️</span>
+            <span>天気を表示</span>
+          </label>
+        </div>
+
+        <div class="setting-item checkbox-item">
+          <label>
+            <input type="checkbox" id="modal-fill-screen-toggle">
+            <span class="icon">🖼️</span>
+            <span>画面いっぱいに表示（余白なし）</span>
+          </label>
+        </div>
+
+        <button id="close-settings-modal" class="btn-primary">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

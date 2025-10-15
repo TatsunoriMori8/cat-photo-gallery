@@ -1,0 +1,347 @@
+# Web Slideshow (GitHub Pages) — Requirements & Handoff Doc
+
+_Last updated: 2025-10-14 (JST)_
+
+## 0. Executive Summary
+
+We will build a **static web application** (HTML/CSS/JS, no backend) that displays high‑quality images as a slideshow on **TCL Google TV (Android TV/Google TV)** as well as iPhone/iPad/Mac.  
+The app will be hosted on **GitHub Pages**. All media (images) and app assets (HTML/CSS/JS) live in the same repository. No Google Photos / OAuth is required in the initial version. This avoids authentication friction and API policy changes.
+
+**Why this approach**  
+- ✅ Zero server ops, zero cost (GitHub Pages)  
+- ✅ Works on TV browser, iOS, Android, desktop  
+- ✅ Original quality images (no downscaling by third‑party APIs)  
+- ✅ Simple update flow: add images/commit → `git push` → live  
+- ✅ Full creative control (layout, transitions, overlays, randomization)  
+- ✅ No dependency on Google Photos API (which tightened access in 2025)  
+
+**Non‑goals (v1)**  
+- ✗ No Google Photos Library API / Picker API (may consider later)  
+- ✗ No persistent database or user auth  
+- ✗ No heavy video transitions/GL shaders (keep simple & reliable for TV)  
+
+
+---
+
+## 1. Background & Context
+
+- User creates many cat/fantasy artworks and wants to **display them as a TV slideshow** (screensaver‑like), ideally with **clock/date/weather overlays**.  
+- Google TV Ambient/Backdrop mode with Google Photos shows a limited subset of albums and doesn’t offer desired control (shuffle across many albums, order, timings).  
+- Existing Android TV apps (e.g., PixFolio) either require local download, paywalls for simple overlays, or lack flexibility.  
+- The user previously prototyped iOS apps but **deployment constraints** (dev certs, 1‑week expiry) were frustrating.  
+- Therefore, a **web app** is the most portable, low‑maintenance solution.  
+- Hosting on **GitHub Pages** gives a robust, free CDN‑like distribution and a clean “`git push → deploy`” workflow.
+
+---
+
+## 2. Objectives
+
+1. Display high‑quality images full‑screen on TV and other devices.  
+2. Let the user **choose one or multiple “albums” (folders)** to feed the slideshow.  
+3. Provide **UI controls** for: play/pause, next/prev, **shuffle** toggle, **duration** per image, album selection.  
+4. Provide **overlays**: **clock (24h + seconds)** and **date/weekday (English)**; optional **weather** (OpenWeatherMap, free tier).  
+5. Provide **layout logic** for **vertical (portrait) images**: show **two portraits side‑by‑side** (or smart pan/zoom) on a horizontal TV.  
+6. Keep everything **static** and **privacy‑friendly** (no external auth, no server).  
+
+Success = the user can open a single URL on TV and enjoy a curated, randomized slideshow across chosen folders with overlays.
+
+---
+
+## 3. System Overview
+
+A static site hosted on GitHub Pages. Assets and images are delivered as static files. JavaScript handles album selection, image listing, shuffling, timing, overlays, and simple transitions.
+
+```mermaid
+flowchart TD
+  U[User on TV / iPad / iPhone / Mac] -->|Open URL| W[Static Web App (GitHub Pages)]
+  W -->|Fetch| A[albums/<album>/images]
+  W -->|Render| S[Slideshow Engine]
+  S -->|Overlays| O[Clock/Date/Weather]
+```
+
+### 3.1 Repository Layout (proposed)
+```
+repo-root/
+├─ index.html           # App shell
+├─ style.css            # Global styles
+├─ app.js               # Slideshow engine + UI
+├─ config.json          # Site-level config (defaults, album registry)
+├─ data/
+│  └─ images.json       # (optional) prebuilt image manifests per album
+├─ albums/
+│  ├─ cats/             # Album A
+│  │  ├─ 001.jpg
+│  │  ├─ 002.jpg
+│  │  └─ ...
+│  ├─ fantasy/          # Album B
+│  ├─ portraits/        # Album C
+│  └─ nature/           # Album D
+└─ actions/             # (optional) GitHub Actions scripts
+```
+
+- **Option A (manual list):** `config.json` lists albums and each album’s images (explicit arrays).  
+- **Option B (auto list via Actions):** Actions scan `albums/*` and produce `data/images.json` manifest for JS to consume.  
+
+---
+
+## 4. Functional Requirements
+
+### 4.1 Albums & Image Sources
+- **R‑A1:** The app supports **N albums** (folders under `/albums/<name>/`).  
+- **R‑A2:** The user can **choose one or multiple albums** to include in the slideshow.  
+- **R‑A3:** When multiple albums are selected, the app **merges** their image lists and **optionally shuffles** them.  
+- **R‑A4:** Album registry is declared in `config.json`, e.g.:
+  ```json
+  {
+    "albums": [
+      {"id":"cats", "label":"Cats", "path":"albums/cats/"},
+      {"id":"fantasy", "label":"Fantasy", "path":"albums/fantasy/"},
+      {"id":"portraits", "label":"Portraits", "path":"albums/portraits/"},
+      {"id":"nature", "label":"Nature", "path":"albums/nature/"}
+    ]
+  }
+  ```
+- **R‑A5:** Image discovery options:
+  - Manual: `config.json` also lists image files per album.
+  - Auto: JS fetches `data/images.json` generated by Actions (preferred at scale).
+
+### 4.2 Slideshow Playback
+- **R‑P1:** Controls: play/pause, next, previous.  
+- **R‑P2:** **Duration** per slide adjustable (e.g., 3–120 seconds).  
+- **R‑P3:** **Shuffle** toggle; if off, deterministic order (filename asc).  
+- **R‑P4:** **Cross‑fade** transition (CSS opacity) ~1–2s; avoid heavy effects for TV performance.  
+- **R‑P5:** **Preload next image** for smooth transitions.  
+- **R‑P6:** **Loop** indefinitely.  
+- **R‑P7:** **Error skip**: if an image fails to load within timeout, skip and continue.
+
+### 4.3 Layout & Portrait Handling
+- **R‑L1:** Default: single image, `object-fit: contain`, centered on black background.  
+- **R‑L2:** **Portrait heuristic**: if image aspect ratio ≤ 0.8 (tunable), treat as “portrait candidate”.  
+- **R‑L3:** **Two‑portrait mode**: if the next two images are portraits, show them **side‑by‑side** in a flex container; otherwise fallback to single.  
+- **R‑L4:** **Smart fill**: optional subtle zoom/pan (Ken Burns lite) via CSS transform for portraits to reduce pillarboxing (toggle in settings).  
+- **R‑L5:** **Safe area** for overlays (clock/weather) with padding and shadow for readability.
+
+### 4.4 Overlays
+- **R‑O1 Clock:** 24h **with seconds**. Update every 1s.  
+- **R‑O2 Date:** English locale, e.g., `Tuesday, October 14, 2025`.  
+- **R‑O3 Weather (optional):**
+  - Provider: **OpenWeatherMap** (free tier).  
+  - Config: city or lat/lon + API key in `config.json` (site owner only, not exposed in UI).  
+  - Refresh every 60–300s; unit: metric (°C).  
+  - Display: e.g., `Clear, 23°C`.  
+
+### 4.5 UI & Settings
+- **R‑U1:** Minimal control bar: album multi‑select, shuffle toggle, duration slider/field, play/pause, next/prev.  
+- **R‑U2:** Controls **auto‑hide** after N seconds; remote/keyboard/mouse moves reveal.  
+- **R‑U3:** **URL params** override defaults (e.g., `?albums=cats,fantasy&sec=10&shuffle=1&clock=1&weather=0`).  
+- **R‑U4:** Settings persist in **`localStorage`** (per device).  
+- **R‑U5:** **Fullscreen** toggle available (where supported).  
+- **R‑U6:** **Wake Lock** (if supported) to prevent the screen from sleeping during playback.
+
+### 4.6 Compatibility
+- **R‑C1:** TCL Google TV (Android TV 12, Google TV UI) default browser (Chromium‑based) — **full‑screen**, remote key events (left/right to prev/next).  
+- **R‑C2:** iOS/iPadOS Safari 17+, Chrome 120+ on macOS/Windows.  
+- **R‑C3:** No audio; image‑only to avoid HDMI power policies.
+
+### 4.7 Performance
+- **R‑F1:** Initial view loads UI and the first image within ~2s on typical home broadband.  
+- **R‑F2:** Preload the upcoming 1–2 images.  
+- **R‑F3:** Memory usage bounded; avoid loading entire album at once for huge sets.  
+- **R‑F4:** Use modern, large‑image friendly CSS; avoid canvas re‑rasterization loops.
+
+### 4.8 Accessibility
+- **R‑A11y1:** High‑contrast text/shadow for overlays.  
+- **R‑A11y2:** Keyboard support (←/→/Space/F).  
+- **R‑A11y3:** Reduced‑motion mode (disable pans/zooms) via user setting.
+
+---
+
+## 5. Configuration
+
+### 5.1 `config.json` (example)
+```json
+{
+  "defaults": {
+    "albums": ["cats", "fantasy"],
+    "durationSec": 8,
+    "shuffle": true,
+    "clock": true,
+    "date": true,
+    "weather": false,
+    "portraitPairing": true,
+    "kenBurnsLite": false
+  },
+  "weather": {
+    "provider": "openweathermap",
+    "apiKey": "YOUR_API_KEY",
+    "city": "Tokyo",
+    "units": "metric",
+    "refreshSec": 120
+  },
+  "albums": [
+    {"id":"cats", "label":"Cats", "path":"albums/cats/"},
+    {"id":"fantasy", "label":"Fantasy", "path":"albums/fantasy/"},
+    {"id":"portraits", "label":"Portraits", "path":"albums/portraits/"},
+    {"id":"nature", "label":"Nature", "path":"albums/nature/"}
+  ]
+}
+```
+
+### 5.2 URL Parameters (override)
+- `albums=cats,fantasy`  
+- `sec=10` (duration seconds)  
+- `shuffle=1|0`  
+- `clock=1|0`, `date=1|0`, `weather=1|0`  
+- `pair=1|0` (portrait pairing)  
+- `ken=1|0` (Ken Burns lite)  
+
+---
+
+## 6. Data Discovery Options
+
+### Option A — Manual Lists (simplest)
+- Pros: zero tooling, explicit control.  
+- Cons: must edit when adding images.
+
+### Option B — Auto Manifests via GitHub Actions (recommended at scale)
+- Nightly or on push, an Action scans `albums/*/*` and writes `data/images.json`:
+  ```json
+  {
+    "cats": ["001.jpg","002.jpg","003.jpg"],
+    "fantasy": ["001.jpg","002.jpg"],
+    "portraits": ["001.jpg"],
+    "nature": []
+  }
+  ```
+- JS fetches this manifest and builds absolute URLs per album path.  
+- Pros: just add files and `git push`; lists stay current.  
+- Cons: initial Actions setup.
+
+---
+
+## 7. UI Sketch (wireframe)
+
+```mermaid
+flowchart LR
+  A[Header/Overlays]:::over
+  B[Canvas: Image or Pair of Portraits]
+  C[Control Bar: Albums Multi-select | Duration | Shuffle | Play/Pause | Next/Prev | Fullscreen]
+
+classDef over fill:#222,color:#fff,stroke:#555;
+```
+
+- Overlays (top‑right): Clock / Date / Weather  
+- Control bar auto‑hides; remote/keyboard shows it.
+
+---
+
+## 8. Edge Cases & Error Handling
+
+- Missing images → skip with toast log.  
+- Mixed very large files → lazy preload next; keep transition smooth.  
+- Portrait detection wrong → allow manual override via filename suffix (`_p`) or EXIF orientation check if available.  
+- Weather API fail → silently hide weather and retry later.  
+- LocalStorage blocked → fall back to defaults on each load.
+
+---
+
+## 9. Security & Privacy
+
+- Public static site; **security by obscurity** is acceptable for this use case.  
+- (Optional) simple passphrase gate for semi‑private sharing.  
+- No trackers, no analytics by default.  
+- Weather API key stored in repo is public—use a limited key tied to this use case (or inject via GitHub Pages build vars if desired).
+
+---
+
+## 10. Deployment (GitHub Pages)
+
+1. Create repo → push code and images.  
+2. **Settings → Pages → Build from branch** (main / root).  
+3. Wait ~30–60s → open `https://<user>.github.io/<repo>/`.  
+4. Add CNAME if using custom domain (optional).  
+5. For large image sets, consider **Git LFS** only if you exceed practical repo size; otherwise regular git is fine.
+
+---
+
+## 11. Acceptance Criteria (v1)
+
+- AC‑1: User can open URL on TCL Google TV and see a full‑screen slideshow.  
+- AC‑2: User can select **one or more albums** and see merged stream.  
+- AC‑3: **Shuffle** toggle works; **duration** is adjustable (3–120s).  
+- AC‑4: **Portrait pairing** shows two portrait images side‑by‑side when available.  
+- AC‑5: **Clock (24h+seconds)** and **English date** visible; legible on TV.  
+- AC‑6: (If enabled) **Weather** displays and updates at configured interval.  
+- AC‑7: Settings persist via localStorage; URL params override defaults.  
+- AC‑8: Next/Prev and Play/Pause work via keyboard/remote (←/→/Space).
+
+---
+
+## 12. Test Plan (manual)
+
+- **TV Browser:** Load time < 3s to first image; transitions smooth; remote keys work.  
+- **iPad/iPhone:** Orientation changes; controls accessible; clock/date layout stable.  
+- **Portrait Pairing:** Album with many portrait images triggers side‑by‑side layout frequently.  
+- **Shuffle/Duration:** Verify changes apply immediately to subsequent slides.  
+- **Weather:** Wrong API key → overlay hides; correct key → data shows.  
+- **Large Set:** 500+ images across 4 albums; memory stable; no leaks observed.  
+
+---
+
+## 13. Risks & Mitigations
+
+- **Huge repo with images** → keep each image ≤10–20MB; compress with high‑quality JPEG/AVIF/WEBP; consider incremental albums.  
+- **TV browser differences** → stick to standards; avoid heavy Canvas/WebGL.  
+- **Network hiccups** → preload next image; set reasonable timeouts; skip on error.  
+- **OpenWeatherMap API limits** → refresh every 60–300s; cache last reading.  
+
+---
+
+## 14. Roadmap
+
+- **v1:** Albums, shuffle, duration, clock/date, basic portrait pairing.  
+- **v1.1:** Weather overlay; URL param overrides; localStorage persistence.  
+- **v1.2:** GitHub Actions for auto manifests; keyboard/remote refinements.  
+- **v1.3:** Ken Burns lite; simple passphrase gate; theming (light/dark).  
+- **v2 (optional):** Android TV WebView wrapper; ADB automation hooks.  
+- **vX (optional):** Re‑introduce Google Photos via Picker API (if UX acceptable).
+
+---
+
+## 15. Handoff Notes for Code‑Gen AI
+
+**Primary tasks:**
+1. Build `index.html`, `style.css`, `app.js` with the structure above.  
+2. Implement album registry (`config.json`) and a **multi‑select** UI to pick albums.  
+3. Implement slideshow engine with **duration**, **shuffle**, **preload next**, **fade transition**.  
+4. Implement **portrait pairing** heuristic and side‑by‑side layout.  
+5. Implement **overlays** (clock/date; optional weather via OpenWeatherMap).  
+6. Implement **URL param overrides** and **localStorage** persistence.  
+7. Provide a minimal **GitHub Actions** workflow that scans `albums/*` and produces `data/images.json`.  
+
+**Quality bar:**
+- Works on TCL Google TV browser full‑screen; remote ←/→/Space keys.  
+- Stable 60fps fade transitions on typical TV hardware.  
+- Clean, readable code; no external frameworks required (vanilla JS).  
+- Use semantic HTML; responsive CSS with flexbox/grid.
+
+---
+
+## 16. Sample Image Manifest (if using Actions)
+
+```json
+{
+  "cats": ["001.jpg", "002.jpg", "nohn_003.webp"],
+  "fantasy": ["dragon_001.jpg", "forest_002.jpg"],
+  "portraits": ["portrait_a.jpg", "portrait_b.jpg"],
+  "nature": []
+}
+```
+
+---
+
+## 17. License & Credits
+
+- Personal use only; no redistribution of image assets without permission.  
+- Weather by OpenWeatherMap (free tier).  
+- Created by the user; document prepared for code‑gen implementation.
