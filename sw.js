@@ -1,5 +1,5 @@
 // Service Worker for PWA
-const CACHE_NAME = 'photo-gallery-v1';
+const CACHE_NAME = 'photo-gallery-v2'; // バージョン更新！
 const urlsToCache = [
   '.',
   'index.html',
@@ -13,42 +13,52 @@ const urlsToCache = [
 
 // インストール
 self.addEventListener('install', event => {
+  // 新しいService Workerをすぐにアクティブに
+  self.skipWaiting();
+
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache');
+        console.log('✅ Cache opened:', CACHE_NAME);
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-// フェッチ
+// フェッチ - ネットワーク優先戦略に変更
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // キャッシュがあれば返す
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
+        // ネットワークから取得成功したらキャッシュ更新
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseClone);
+        });
+        return response;
+      })
+      .catch(() => {
+        // ネットワーク失敗時のみキャッシュを使用
+        return caches.match(event.request);
+      })
   );
 });
 
 // アクティベート（古いキャッシュを削除）
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
+  // すべてのクライアントを即座に制御
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
+    clients.claim().then(() => {
+      return caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('🗑️ Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      });
     })
   );
 });
