@@ -658,9 +658,14 @@ class SlideshowEngine {
 
             // フェードイン完了後に古い画像削除
             setTimeout(() => {
-              const oldImages = Array.from(this.container.querySelectorAll('img'))
-                .filter(img => !imageUrls.includes(img.src.split('/').slice(-1)[0]));
-              oldImages.forEach(img => img.remove());
+              // 新しく追加した画像以外を削除
+              const allImages = this.container.querySelectorAll('img');
+              const newImages = Array.from(allImages).slice(-totalImages); // 最後のN枚が新しい画像
+              allImages.forEach(img => {
+                if (!newImages.includes(img)) {
+                  img.remove();
+                }
+              });
               resolve();
             }, 1000); // CSS transition時間に合わせる
           }
