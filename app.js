@@ -532,8 +532,8 @@ class SlideshowEngine {
       const pairedImages = await this.tryPairPortraitImages(this.currentIndex);
       if (pairedImages) {
         console.log(`   🖼️🖼️ 縦長画像ペアリング適用`);
-        // ペア表示に切り替え（フェード付き）
-        await this.displayPairedImages(pairedImages);
+        // ペア表示
+        this.displayPairedImages(pairedImages);
         this.preloadNext();
         return;
       }
@@ -556,7 +556,7 @@ class SlideshowEngine {
         setTimeout(() => {
           const oldImages = this.container.querySelectorAll('img:not(:last-child)');
           oldImages.forEach(oldImg => oldImg.remove());
-        }, 500); // CSSのtransition時間に合わせる
+        }, 1000); // CSSのtransition時間(1s)に合わせる
       });
     };
 
@@ -624,61 +624,39 @@ class SlideshowEngine {
     });
   }
 
-  // ペアリングした画像を表示（フェード付き）
+  // ペアリングした画像を表示
   displayPairedImages(imageUrls) {
-    return new Promise((resolve) => {
-      this.container.classList.add('pair-mode');
+    // 古い画像を保持したまま、pair-modeクラスを追加
+    this.container.classList.add('pair-mode');
 
-      let loadedCount = 0;
-      const totalImages = imageUrls.length;
+    imageUrls.forEach((url, index) => {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = `Paired Image ${index + 1}`;
 
-      imageUrls.forEach((url, index) => {
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = `Paired Image ${index + 1}`;
+      img.onload = () => {
+        console.log(`✅ ペア画像${index + 1}読み込み成功: ${url}`);
+        // 画像が読み込まれたらコンテナに追加
+        this.container.appendChild(img);
 
-        img.onload = () => {
-          console.log(`✅ ペア画像${index + 1}読み込み成功: ${url}`);
-          loadedCount++;
+        // 次フレームでフェードイン
+        requestAnimationFrame(() => {
+          img.classList.add('visible');
+        });
 
-          // すべての画像がロードされたら表示開始
-          if (loadedCount === totalImages) {
-            // 新しい画像を追加
-            imageUrls.forEach((url2, index2) => {
-              const img2 = document.createElement('img');
-              img2.src = url2;
-              img2.alt = `Paired Image ${index2 + 1}`;
-              this.container.appendChild(img2);
+        // 両方の画像が追加されたら古い画像を削除
+        if (this.container.querySelectorAll('img').length > imageUrls.length) {
+          setTimeout(() => {
+            const allImages = Array.from(this.container.querySelectorAll('img'));
+            // 最後のN枚以外を削除
+            allImages.slice(0, -imageUrls.length).forEach(oldImg => oldImg.remove());
+          }, 1000);
+        }
+      };
 
-              // 次フレームでフェードイン
-              requestAnimationFrame(() => {
-                img2.classList.add('visible');
-              });
-            });
-
-            // フェードイン完了後に古い画像削除
-            setTimeout(() => {
-              // 新しく追加した画像以外を削除
-              const allImages = this.container.querySelectorAll('img');
-              const newImages = Array.from(allImages).slice(-totalImages); // 最後のN枚が新しい画像
-              allImages.forEach(img => {
-                if (!newImages.includes(img)) {
-                  img.remove();
-                }
-              });
-              resolve();
-            }, 1000); // CSS transition時間に合わせる
-          }
-        };
-
-        img.onerror = () => {
-          console.error(`❌ ペア画像${index + 1}読み込みエラー: ${url}`);
-          loadedCount++;
-          if (loadedCount === totalImages) {
-            resolve();
-          }
-        };
-      });
+      img.onerror = () => {
+        console.error(`❌ ペア画像${index + 1}読み込みエラー: ${url}`);
+      };
     });
   }
 
