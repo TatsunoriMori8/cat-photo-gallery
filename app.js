@@ -515,8 +515,7 @@ class SlideshowEngine {
     console.log(`   fillScreen: ${this.settings.fillScreen}`);
     console.log(`   portraitPairing: ${this.settings.portraitPairing}`);
 
-    // 画像コンテナをクリア
-    this.container.innerHTML = '';
+    // 古い画像を保持したまま処理を続ける
     this.container.classList.remove('pair-mode');
 
     // Fill Screen モードの適用
@@ -533,6 +532,8 @@ class SlideshowEngine {
       const pairedImages = await this.tryPairPortraitImages(this.currentIndex);
       if (pairedImages) {
         console.log(`   🖼️🖼️ 縦長画像ペアリング適用`);
+        // 古い画像を削除してからペア表示
+        this.container.innerHTML = '';
         this.displayPairedImages(pairedImages);
         this.preloadNext();
         return;
@@ -544,10 +545,20 @@ class SlideshowEngine {
     img.src = imageUrl;
     img.alt = `Image ${this.currentIndex + 1}`;
 
-    // 読み込み完了後にフェードイン
+    // 読み込み完了後にフェードイン＆古い画像を削除
     img.onload = () => {
       console.log(`✅ 画像読み込み成功: ${imageUrl}`);
-      img.classList.add('visible');
+      // 新しい画像を追加
+      this.container.appendChild(img);
+      // フェードイン用のクラスを追加（次のフレームで）
+      requestAnimationFrame(() => {
+        img.classList.add('visible');
+        // フェードインが完了してから古い画像を削除
+        setTimeout(() => {
+          const oldImages = this.container.querySelectorAll('img:not(:last-child)');
+          oldImages.forEach(oldImg => oldImg.remove());
+        }, 500); // CSSのtransition時間に合わせる
+      });
     };
 
     // エラー時の処理
@@ -569,8 +580,6 @@ class SlideshowEngine {
       // 次の画像へスキップ
       setTimeout(() => this.next(), 2000);
     };
-
-    this.container.appendChild(img);
 
     // 次の画像をプリロード
     this.preloadNext();
