@@ -532,9 +532,8 @@ class SlideshowEngine {
       const pairedImages = await this.tryPairPortraitImages(this.currentIndex);
       if (pairedImages) {
         console.log(`   🖼️🖼️ 縦長画像ペアリング適用`);
-        // 古い画像を削除してからペア表示
-        this.container.innerHTML = '';
-        this.displayPairedImages(pairedImages);
+        // ペア表示に切り替え（フェード付き）
+        await this.displayPairedImages(pairedImages);
         this.preloadNext();
         return;
       }
@@ -625,25 +624,56 @@ class SlideshowEngine {
     });
   }
 
-  // ペアリングした画像を表示
+  // ペアリングした画像を表示（フェード付き）
   displayPairedImages(imageUrls) {
-    this.container.classList.add('pair-mode');
+    return new Promise((resolve) => {
+      this.container.classList.add('pair-mode');
 
-    imageUrls.forEach((url, index) => {
-      const img = document.createElement('img');
-      img.src = url;
-      img.alt = `Paired Image ${index + 1}`;
+      let loadedCount = 0;
+      const totalImages = imageUrls.length;
 
-      img.onload = () => {
-        console.log(`✅ ペア画像${index + 1}読み込み成功: ${url}`);
-        img.classList.add('visible');
-      };
+      imageUrls.forEach((url, index) => {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = `Paired Image ${index + 1}`;
 
-      img.onerror = () => {
-        console.error(`❌ ペア画像${index + 1}読み込みエラー: ${url}`);
-      };
+        img.onload = () => {
+          console.log(`✅ ペア画像${index + 1}読み込み成功: ${url}`);
+          loadedCount++;
 
-      this.container.appendChild(img);
+          // すべての画像がロードされたら表示開始
+          if (loadedCount === totalImages) {
+            // 新しい画像を追加
+            imageUrls.forEach((url2, index2) => {
+              const img2 = document.createElement('img');
+              img2.src = url2;
+              img2.alt = `Paired Image ${index2 + 1}`;
+              this.container.appendChild(img2);
+
+              // 次フレームでフェードイン
+              requestAnimationFrame(() => {
+                img2.classList.add('visible');
+              });
+            });
+
+            // フェードイン完了後に古い画像削除
+            setTimeout(() => {
+              const oldImages = Array.from(this.container.querySelectorAll('img'))
+                .filter(img => !imageUrls.includes(img.src.split('/').slice(-1)[0]));
+              oldImages.forEach(img => img.remove());
+              resolve();
+            }, 1000); // CSS transition時間に合わせる
+          }
+        };
+
+        img.onerror = () => {
+          console.error(`❌ ペア画像${index + 1}読み込みエラー: ${url}`);
+          loadedCount++;
+          if (loadedCount === totalImages) {
+            resolve();
+          }
+        };
+      });
     });
   }
 
