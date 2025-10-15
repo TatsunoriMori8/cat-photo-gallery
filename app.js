@@ -562,7 +562,7 @@ class SlideshowEngine {
         // フェード完了後に古い画像を削除
         setTimeout(() => {
           oldImages.forEach(oldImg => oldImg.remove());
-        }, 300); // CSSのtransition時間(0.3s)に合わせる
+        }, 150); // CSSのtransition時間(0.15s)に合わせる
       });
     };
 
@@ -668,7 +668,7 @@ class SlideshowEngine {
             // フェード完了後に古い画像を削除
             setTimeout(() => {
               oldImages.forEach(oldImg => oldImg.remove());
-            }, 300); // CSSのtransition時間(0.3s)に合わせる
+            }, 150); // CSSのtransition時間(0.15s)に合わせる
           });
         }
       };

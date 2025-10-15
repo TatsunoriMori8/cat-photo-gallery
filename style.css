@@ -472,7 +472,7 @@ button {
   max-height: 100%;
   object-fit: contain;
   opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  transition: opacity 0.15s ease-out;
 }
 
 /* Cover mode - 画面いっぱいに表示 */
