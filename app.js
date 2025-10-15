@@ -19,6 +19,16 @@ let imageManifest = null;
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('アプリ起動...');
 
+  // Service Workerを登録（PWA対応）
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register('sw.js');
+      console.log('✅ Service Worker登録成功:', registration.scope);
+    } catch (error) {
+      console.log('⚠️ Service Worker登録失敗:', error);
+    }
+  }
+
   try {
     // 設定ファイルを読み込み
     config = await loadConfig();
@@ -544,25 +554,20 @@ class SlideshowEngine {
     img.src = imageUrl;
     img.alt = `Image ${this.currentIndex + 1}`;
 
-    // 読み込み完了後にフェードイン
+    // 読み込み完了後に表示
     img.onload = () => {
       console.log(`✅ 画像読み込み成功: ${imageUrl}`);
 
-      // 古い画像にフェードアウトクラスを追加
+      // 古い画像を即座に削除
       const oldImages = this.container.querySelectorAll('img');
-      oldImages.forEach(oldImg => oldImg.classList.add('fade-out'));
+      oldImages.forEach(oldImg => oldImg.remove());
 
       // 新しい画像を追加
       this.container.appendChild(img);
 
-      // 次のフレームでフェードイン開始
+      // 次のフレームでフェードイン
       requestAnimationFrame(() => {
-        img.classList.add('fade-in');
-
-        // フェード完了後に古い画像を削除
-        setTimeout(() => {
-          oldImages.forEach(oldImg => oldImg.remove());
-        }, 400); // CSSのtransition時間(0.4s)に合わせる
+        img.classList.add('visible');
       });
     };
 

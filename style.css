@@ -11,10 +11,15 @@
 html, body {
   width: 100%;
   height: 100%;
+  /* スマホのURLバー対応 */
+  min-height: 100vh;
+  min-height: 100dvh; /* 動的ビューポート高さ */
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   background: #000;
   color: #fff;
+  /* スマホのセーフエリア対応 */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* ============================================
@@ -64,7 +69,9 @@ html, body {
 
 #app {
   width: 100vw;
+  width: 100dvw;
   height: 100vh;
+  height: 100dvh; /* 動的ビューポート高さ */
   position: relative;
   overflow: hidden;
 }
@@ -473,7 +480,7 @@ button {
   object-fit: contain;
   position: absolute;
   opacity: 0;
-  transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.2s ease-out;
 }
 
 /* Cover mode - 画面いっぱいに表示 */
@@ -485,14 +492,9 @@ button {
   object-fit: cover !important;
 }
 
-/* 新しい画像 - フェードイン */
-.image-container img.fade-in {
+/* 新しい画像 - 表示 */
+.image-container img.visible {
   opacity: 1;
-}
-
-/* 古い画像 - フェードアウト */
-.image-container img.fade-out {
-  opacity: 0;
 }
 
 /* Portrait Pairing Mode */
