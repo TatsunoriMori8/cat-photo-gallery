@@ -26,7 +26,8 @@ ENV/
 .cache/
 
 # Data and reports (not needed for GitHub Pages)
-data/
+data/raw/
+data/processed/
 reports/
 notebooks/
 src/
