@@ -544,19 +544,25 @@ class SlideshowEngine {
     img.src = imageUrl;
     img.alt = `Image ${this.currentIndex + 1}`;
 
-    // 読み込み完了後にフェードイン＆古い画像を削除
+    // 読み込み完了後にフェードイン＆古い画像をフェードアウト
     img.onload = () => {
       console.log(`✅ 画像読み込み成功: ${imageUrl}`);
+
+      // 古い画像にフェードアウトクラスを追加
+      const oldImages = this.container.querySelectorAll('img');
+      oldImages.forEach(oldImg => oldImg.classList.add('fade-out'));
+
       // 新しい画像を追加
       this.container.appendChild(img);
-      // フェードイン用のクラスを追加（次のフレームで）
+
+      // 次のフレームでフェードイン開始
       requestAnimationFrame(() => {
         img.classList.add('visible');
-        // フェードインが完了してから古い画像を削除
+
+        // フェード完了後に古い画像を削除
         setTimeout(() => {
-          const oldImages = this.container.querySelectorAll('img:not(:last-child)');
           oldImages.forEach(oldImg => oldImg.remove());
-        }, 1000); // CSSのtransition時間(1s)に合わせる
+        }, 300); // CSSのtransition時間(0.3s)に合わせる
       });
     };
 
@@ -626,8 +632,15 @@ class SlideshowEngine {
 
   // ペアリングした画像を表示
   displayPairedImages(imageUrls) {
-    // 古い画像を保持したまま、pair-modeクラスを追加
+    // 古い画像にフェードアウトを適用
+    const oldImages = Array.from(this.container.querySelectorAll('img'));
+    oldImages.forEach(oldImg => oldImg.classList.add('fade-out'));
+
+    // pair-modeクラスを追加
     this.container.classList.add('pair-mode');
+
+    let loadedCount = 0;
+    const newImages = [];
 
     imageUrls.forEach((url, index) => {
       const img = document.createElement('img');
@@ -636,21 +649,27 @@ class SlideshowEngine {
 
       img.onload = () => {
         console.log(`✅ ペア画像${index + 1}読み込み成功: ${url}`);
-        // 画像が読み込まれたらコンテナに追加
-        this.container.appendChild(img);
+        loadedCount++;
+        newImages.push(img);
 
-        // 次フレームでフェードイン
-        requestAnimationFrame(() => {
-          img.classList.add('visible');
-        });
+        // 両方の画像がロードされたら表示
+        if (loadedCount === imageUrls.length) {
+          // 新しい画像を追加
+          newImages.forEach(newImg => {
+            this.container.appendChild(newImg);
+          });
 
-        // 両方の画像が追加されたら古い画像を削除
-        if (this.container.querySelectorAll('img').length > imageUrls.length) {
-          setTimeout(() => {
-            const allImages = Array.from(this.container.querySelectorAll('img'));
-            // 最後のN枚以外を削除
-            allImages.slice(0, -imageUrls.length).forEach(oldImg => oldImg.remove());
-          }, 1000);
+          // 次フレームでフェードイン
+          requestAnimationFrame(() => {
+            newImages.forEach(newImg => {
+              newImg.classList.add('visible');
+            });
+
+            // フェード完了後に古い画像を削除
+            setTimeout(() => {
+              oldImages.forEach(oldImg => oldImg.remove());
+            }, 300); // CSSのtransition時間(0.3s)に合わせる
+          });
         }
       };
 

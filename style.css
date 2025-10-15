@@ -472,7 +472,7 @@ button {
   max-height: 100%;
   object-fit: contain;
   opacity: 0;
-  transition: opacity 1s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
 }
 
 /* Cover mode - 画面いっぱいに表示 */
@@ -486,6 +486,11 @@ button {
 
 .image-container img.visible {
   opacity: 1;
+}
+
+/* 古い画像のフェードアウト */
+.image-container img.fade-out {
+  opacity: 0;
 }
 
 /* Portrait Pairing Mode */
