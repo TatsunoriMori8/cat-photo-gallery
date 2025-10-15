@@ -25,14 +25,6 @@ ENV/
 *.tmp
 .cache/
 
-# Large image albums (exclude original images, keep only thumbnails)
-albums/nekonoe 日常には猫がいる/
-albums/nekonoe 猫永遠幡想/
-albums/Nohn/
-albums/ぽんちょねこ/
-albums/畏怖の獣絵/
-albums/切り絵latest/
-
 # Data and reports (not needed for GitHub Pages)
 data/
 reports/
