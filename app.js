@@ -544,25 +544,25 @@ class SlideshowEngine {
     img.src = imageUrl;
     img.alt = `Image ${this.currentIndex + 1}`;
 
-    // 読み込み完了後にフェードイン＆古い画像をフェードアウト
+    // 読み込み完了後にスライドイン
     img.onload = () => {
       console.log(`✅ 画像読み込み成功: ${imageUrl}`);
 
-      // 古い画像にフェードアウトクラスを追加
+      // 古い画像にスライドアウトクラスを追加
       const oldImages = this.container.querySelectorAll('img');
-      oldImages.forEach(oldImg => oldImg.classList.add('fade-out'));
+      oldImages.forEach(oldImg => oldImg.classList.add('slide-out'));
 
       // 新しい画像を追加
       this.container.appendChild(img);
 
-      // 次のフレームでフェードイン開始
+      // 次のフレームでスライドイン開始
       requestAnimationFrame(() => {
-        img.classList.add('visible');
+        img.classList.add('slide-in');
 
-        // フェード完了後に古い画像を削除
+        // スライド完了後に古い画像を削除
         setTimeout(() => {
           oldImages.forEach(oldImg => oldImg.remove());
-        }, 150); // CSSのtransition時間(0.15s)に合わせる
+        }, 500); // CSSのtransition時間(0.5s)に合わせる
       });
     };
 
@@ -632,9 +632,9 @@ class SlideshowEngine {
 
   // ペアリングした画像を表示
   displayPairedImages(imageUrls) {
-    // 古い画像にフェードアウトを適用
+    // 古い画像にスライドアウトを適用
     const oldImages = Array.from(this.container.querySelectorAll('img'));
-    oldImages.forEach(oldImg => oldImg.classList.add('fade-out'));
+    oldImages.forEach(oldImg => oldImg.classList.add('slide-out'));
 
     // pair-modeクラスを追加
     this.container.classList.add('pair-mode');
@@ -659,16 +659,16 @@ class SlideshowEngine {
             this.container.appendChild(newImg);
           });
 
-          // 次フレームでフェードイン
+          // 次フレームでスライドイン
           requestAnimationFrame(() => {
             newImages.forEach(newImg => {
-              newImg.classList.add('visible');
+              newImg.classList.add('slide-in');
             });
 
-            // フェード完了後に古い画像を削除
+            // スライド完了後に古い画像を削除
             setTimeout(() => {
               oldImages.forEach(oldImg => oldImg.remove());
-            }, 150); // CSSのtransition時間(0.15s)に合わせる
+            }, 500); // CSSのtransition時間(0.5s)に合わせる
           });
         }
       };

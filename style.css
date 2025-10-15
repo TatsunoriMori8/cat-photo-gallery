@@ -471,8 +471,9 @@ button {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  opacity: 0;
-  transition: opacity 0.15s ease-out;
+  position: absolute;
+  transform: translateX(100%);
+  transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 /* Cover mode - 画面いっぱいに表示 */
@@ -484,13 +485,14 @@ button {
   object-fit: cover !important;
 }
 
-.image-container img.visible {
-  opacity: 1;
+/* 新しい画像 - 右から入ってくる */
+.image-container img.slide-in {
+  transform: translateX(0);
 }
 
-/* 古い画像のフェードアウト */
-.image-container img.fade-out {
-  opacity: 0;
+/* 古い画像 - 左に出ていく */
+.image-container img.slide-out {
+  transform: translateX(-100%);
 }
 
 /* Portrait Pairing Mode */
