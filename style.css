@@ -177,16 +177,11 @@ html, body {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
   width: 100vw;
   width: 100dvw;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 100vh;
-  min-height: 100dvh;
-  /* iPhoneのホームインジケーター領域を埋める */
-  padding-bottom: env(safe-area-inset-bottom);
-  box-sizing: border-box;
+  /* セーフエリアを除いた高さ */
+  height: calc(100vh - env(safe-area-inset-bottom, 0px));
+  height: calc(100dvh - env(safe-area-inset-bottom, 0px));
   z-index: 10;
   background: #000;
   overflow: hidden;
@@ -500,10 +495,9 @@ button {
 .image-container {
   width: 100vw;
   width: 100dvw;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 100vh;
-  min-height: 100dvh;
+  /* セーフエリアを除いた高さ */
+  height: calc(100vh - env(safe-area-inset-bottom, 0px));
+  height: calc(100dvh - env(safe-area-inset-bottom, 0px));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -512,10 +506,6 @@ button {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  /* iPhoneのホームインジケーター領域を埋める */
-  padding-bottom: env(safe-area-inset-bottom);
-  box-sizing: border-box;
   z-index: 11;
   overflow: hidden;
 }
