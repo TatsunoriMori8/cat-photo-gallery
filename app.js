@@ -1054,7 +1054,12 @@ function updateOverlayVisibility() {
 
   // 時計・日付・天気のいずれかが有効なら表示
   const shouldShow = settings.clock || settings.date || settings.weather;
-  overlay.style.display = shouldShow ? 'block' : 'none';
+
+  if (shouldShow) {
+    overlay.classList.remove('hidden');
+  } else {
+    overlay.classList.add('hidden');
+  }
 
   // 各要素の表示/非表示
   dateLine.style.display = settings.date ? 'block' : 'none';
