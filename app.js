@@ -690,8 +690,8 @@ class SlideshowEngine {
       const img = document.createElement('img');
       img.src = url;
       img.alt = `Paired Image ${index + 1}`;
-      // ペアモードではvisibleクラスを最初から付与
-      img.classList.add('visible');
+      // 最初は透明に
+      img.style.opacity = '0';
 
       img.onload = () => {
         console.log(`✅ ペア画像${index + 1}読み込み成功: ${url}`);
@@ -702,13 +702,26 @@ class SlideshowEngine {
         if (loadedCount === imageUrls.length) {
           console.log(`✅ ペア画像すべてロード完了、表示開始`);
 
-          // 古い画像を即座に削除
-          const oldImages = this.container.querySelectorAll('img');
-          oldImages.forEach(oldImg => oldImg.remove());
-
-          // 新しい画像を追加（visibleクラス付き）
+          // 新しい画像を先に追加（透明状態）
           newImages.forEach(newImg => {
             this.container.appendChild(newImg);
+          });
+
+          // 次のフレームで古い画像を削除＆新しい画像を表示
+          requestAnimationFrame(() => {
+            // 古い画像を削除
+            const oldImages = this.container.querySelectorAll('img');
+            oldImages.forEach(oldImg => {
+              if (!newImages.includes(oldImg)) {
+                oldImg.remove();
+              }
+            });
+
+            // 新しい画像をフェードイン
+            newImages.forEach(newImg => {
+              newImg.classList.add('visible');
+              newImg.style.opacity = '1';
+            });
           });
         }
       };
@@ -719,10 +732,20 @@ class SlideshowEngine {
         loadedCount++;
         if (loadedCount === imageUrls.length && newImages.length > 0) {
           // 読み込めた画像だけ表示
-          const oldImages = this.container.querySelectorAll('img');
-          oldImages.forEach(oldImg => oldImg.remove());
           newImages.forEach(newImg => {
             this.container.appendChild(newImg);
+          });
+          requestAnimationFrame(() => {
+            const oldImages = this.container.querySelectorAll('img');
+            oldImages.forEach(oldImg => {
+              if (!newImages.includes(oldImg)) {
+                oldImg.remove();
+              }
+            });
+            newImages.forEach(newImg => {
+              newImg.classList.add('visible');
+              newImg.style.opacity = '1';
+            });
           });
         }
       };
@@ -863,8 +886,13 @@ function setupInputListeners() {
         slideshowEngine.prev();
       }
     } else if (Math.abs(diffX) < 20 && Math.abs(diffY) < 20) {
-      // タップ → コントロールバー表示/非表示
-      toggleControls();
+      // タップ → コントロールバー表示/非表示トグル
+      const controls = document.getElementById('controls');
+      if (controls.classList.contains('hidden')) {
+        showControls();
+      } else {
+        hideControls();
+      }
     }
   });
 

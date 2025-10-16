@@ -790,7 +790,7 @@ button {
   }
 
   .overlay {
-    bottom: 100px;
+    bottom: 120px;
     right: 12px;
     font-size: 14px;
   }
@@ -804,14 +804,23 @@ button {
   }
 
   .controls {
-    height: 72px;
-    gap: 16px;
+    height: 96px;
+    gap: 20px;
+    padding: 0 16px;
   }
 
   .control-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+  }
+
+  .control-btn::before {
+    /* タップ領域をさらに拡大 */
+    top: -16px;
+    left: -16px;
+    right: -16px;
+    bottom: -16px;
   }
 
   /* Disable portrait pairing on mobile portrait */
