@@ -10,10 +10,9 @@
     "fillScreen": false
   },
   "weather": {
-    "provider": "openweathermap",
-    "apiKey": "3447f94ea2deed5c895765779a5155e0",
-    "city": "Tokyo",
-    "units": "metric",
+    "provider": "open-meteo",
+    "latitude": 35.6762,
+    "longitude": 139.6503,
     "refreshSec": 3600
   },
   "albums": [

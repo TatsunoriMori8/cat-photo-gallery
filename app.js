@@ -967,10 +967,10 @@ function initializeOverlay() {
   }
 
   // 天気の初期取得と更新開始
-  if (settings.weather && config.weather && config.weather.apiKey) {
+  if (settings.weather) {
     fetchAndUpdateWeather();
     // 設定された間隔で天気を更新（デフォルト1時間）
-    const refreshMs = (config.weather.refreshSec || 3600) * 1000;
+    const refreshMs = (config.weather?.refreshSec || 3600) * 1000;
     weatherInterval = setInterval(fetchAndUpdateWeather, refreshMs);
   }
 }
@@ -1026,22 +1026,16 @@ function updateDate() {
 }
 
 // ============================================
-// 天気の取得と更新
+// 天気の取得と更新（Open-Meteo API使用）
 // ============================================
 
 async function fetchAndUpdateWeather() {
-  if (!config.weather || !config.weather.apiKey) {
-    console.warn('天気APIキーが設定されていません');
-    return;
-  }
+  // 東京の緯度経度
+  const latitude = config.weather?.latitude || 35.6762;
+  const longitude = config.weather?.longitude || 139.6503;
 
-  const apiKey = config.weather.apiKey;
-  const city = config.weather.city || 'Tokyo';
-  const units = config.weather.units || 'metric';
-
-  // OpenWeatherMap API v3 (One Call API 3.0)
-  // 注: 無料プランではv2.5のCurrent Weatherを使用
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=${units}&lang=en`;
+  // Open-Meteo API（APIキー不要）
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=Asia/Tokyo`;
 
   try {
     console.log('天気情報取得中...');
@@ -1069,43 +1063,41 @@ async function fetchAndUpdateWeather() {
 // ============================================
 
 function updateWeatherDisplay() {
-  if (!weatherData) return;
+  if (!weatherData || !weatherData.current) return;
 
-  const temp = Math.round(weatherData.main.temp);
-  const condition = weatherData.weather[0].main;
-  const icon = getWeatherIcon(condition);
+  const temp = Math.round(weatherData.current.temperature_2m);
+  const weatherCode = weatherData.current.weather_code;
+  const icon = getWeatherIconFromCode(weatherCode);
 
   const weatherElement = document.getElementById('weather');
   weatherElement.textContent = `${icon} ${temp}°C`;
   weatherElement.style.display = settings.weather ? 'inline' : 'none';
 
-  console.log(`天気表示更新: ${condition} ${temp}°C`);
+  console.log(`天気表示更新: コード${weatherCode} ${temp}°C`);
 }
 
 // ============================================
-// 天気アイコンの取得
+// 天気アイコンの取得（WMO Weather Code対応）
 // ============================================
 
-function getWeatherIcon(condition) {
-  const icons = {
-    'Clear': '☀️',
-    'Clouds': '☁️',
-    'Rain': '🌧️',
-    'Drizzle': '🌦️',
-    'Thunderstorm': '⛈️',
-    'Snow': '❄️',
-    'Mist': '🌫️',
-    'Fog': '🌫️',
-    'Haze': '🌫️',
-    'Smoke': '🌫️',
-    'Dust': '🌫️',
-    'Sand': '🌫️',
-    'Ash': '🌫️',
-    'Squall': '💨',
-    'Tornado': '🌪️'
-  };
+function getWeatherIconFromCode(code) {
+  // WMO Weather interpretation codes
+  // https://open-meteo.com/en/docs
+  if (code === 0) return '☀️'; // Clear sky
+  if (code >= 1 && code <= 3) return '🌤️'; // Mainly clear, partly cloudy
+  if (code >= 45 && code <= 48) return '🌫️'; // Fog
+  if (code >= 51 && code <= 55) return '🌦️'; // Drizzle
+  if (code >= 56 && code <= 57) return '🌧️'; // Freezing Drizzle
+  if (code >= 61 && code <= 65) return '🌧️'; // Rain
+  if (code >= 66 && code <= 67) return '🌧️'; // Freezing Rain
+  if (code >= 71 && code <= 75) return '❄️'; // Snow fall
+  if (code === 77) return '❄️'; // Snow grains
+  if (code >= 80 && code <= 82) return '🌧️'; // Rain showers
+  if (code >= 85 && code <= 86) return '❄️'; // Snow showers
+  if (code === 95) return '⛈️'; // Thunderstorm
+  if (code >= 96 && code <= 99) return '⛈️'; // Thunderstorm with hail
 
-  return icons[condition] || '🌤️';
+  return '🌤️'; // Default
 }
 
 // ============================================
