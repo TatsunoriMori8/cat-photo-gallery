@@ -48,6 +48,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('初期化エラー:', error);
     alert('アプリの初期化に失敗しました。config.jsonを確認してください。');
   }
+
+  // ページがバックグラウンドから復帰したときにWake Lockを再取得
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible' && slideshowEngine && !slideshowEngine.isPaused) {
+      console.log('ページ復帰: Wake Lock再取得');
+      await slideshowEngine.requestWakeLock();
+    }
+  });
 });
 
 // ============================================
@@ -492,6 +500,7 @@ class SlideshowEngine {
     this.timer = null;
     this.container = document.getElementById('image-container');
     this.preloadedImages = new Map();
+    this.wakeLock = null; // スリープ防止用
 
     console.log('SlideshowEngine initialized:', {
       imageCount: this.images.length,
@@ -501,10 +510,42 @@ class SlideshowEngine {
     });
   }
 
-  start() {
+  async start() {
     console.log('スライドショー開始');
     this.showImage(this.currentIndex);
     this.startTimer();
+    // スリープ防止を有効化
+    await this.requestWakeLock();
+  }
+
+  // スリープ防止機能
+  async requestWakeLock() {
+    try {
+      if ('wakeLock' in navigator) {
+        this.wakeLock = await navigator.wakeLock.request('screen');
+        console.log('✅ Wake Lock有効化: 画面スリープ防止');
+
+        // Wake Lockが解除された時の処理
+        this.wakeLock.addEventListener('release', () => {
+          console.log('⚠️ Wake Lock解除');
+        });
+      } else {
+        console.log('⚠️ Wake Lock API非対応');
+      }
+    } catch (err) {
+      console.error('Wake Lock取得失敗:', err);
+    }
+  }
+
+  // Wake Lockを解除
+  releaseWakeLock() {
+    if (this.wakeLock !== null) {
+      this.wakeLock.release()
+        .then(() => {
+          this.wakeLock = null;
+          console.log('Wake Lock解除完了');
+        });
+    }
   }
 
   async showImage(index) {

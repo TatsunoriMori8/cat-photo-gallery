@@ -647,11 +647,32 @@ button {
   justify-content: center;
   align-items: center;
   transition: all 0.2s;
+  /* タッチデバイスでの反応改善 */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  touch-action: manipulation;
+  user-select: none;
+  /* タップ領域を拡大（視覚的には変わらない） */
+  position: relative;
+}
+
+.control-btn::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  /* タップ領域を24px拡大（合計80px） */
 }
 
 .control-btn:hover {
   background: var(--button-bg-hover);
   transform: scale(1.1);
+}
+
+.control-btn:active {
+  transform: scale(0.95);
+  background: var(--button-bg-hover);
 }
 
 .control-btn:focus {
