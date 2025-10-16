@@ -1,5 +1,5 @@
 // Service Worker for PWA
-const CACHE_NAME = 'photo-gallery-v12'; // 風船アイコン強制更新！
+const CACHE_NAME = 'photo-gallery-v13'; // overlay/controls z-index修正
 const urlsToCache = [
   '.',
   'index.html',

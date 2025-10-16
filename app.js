@@ -376,6 +376,9 @@ async function showSlideshowScreen() {
     // オーバーレイを初期化（時計・日付・天気）
     initializeOverlay();
 
+    // コントロールバーを表示
+    showControls();
+
     // コントロールバーのイベントリスナーを設定（モード切替用）
     setupControlListeners();
 
@@ -1015,10 +1018,12 @@ let weatherData = null;
 // ============================================
 
 function initializeOverlay() {
-  console.log('オーバーレイ初期化...');
+  console.log('オーバーレイ初期化...', settings);
 
   // 時計・日付の表示/非表示
+  console.log('updateOverlayVisibility()を呼び出します');
   updateOverlayVisibility();
+  console.log('updateOverlayVisibility()が完了しました');
 
   // 時計の初期表示と更新開始
   if (settings.clock) {
@@ -1047,24 +1052,36 @@ function initializeOverlay() {
 // ============================================
 
 function updateOverlayVisibility() {
-  const overlay = document.getElementById('overlay');
-  const dateLine = document.getElementById('date-line');
-  const clock = document.getElementById('clock');
-  const weather = document.getElementById('weather');
+  try {
+    console.log('updateOverlayVisibility() 開始');
+    const overlay = document.getElementById('overlay');
+    console.log('overlay要素:', overlay);
+    const dateLine = document.getElementById('date-line');
+    const clock = document.getElementById('clock');
+    const weather = document.getElementById('weather');
 
-  // 時計・日付・天気のいずれかが有効なら表示
-  const shouldShow = settings.clock || settings.date || settings.weather;
+    // 時計・日付・天気のいずれかが有効なら表示
+    const shouldShow = settings.clock || settings.date || settings.weather;
 
-  if (shouldShow) {
-    overlay.classList.remove('hidden');
-  } else {
-    overlay.classList.add('hidden');
+    console.log('updateOverlayVisibility:', { shouldShow, settings });
+
+    if (shouldShow) {
+      overlay.classList.remove('hidden');
+      console.log('overlay表示 - hiddenクラス削除');
+    } else {
+      overlay.classList.add('hidden');
+      console.log('overlay非表示 - hiddenクラス追加');
+    }
+
+    // 各要素の表示/非表示
+    dateLine.style.display = settings.date ? 'block' : 'none';
+    clock.style.display = settings.clock ? 'inline' : 'none';
+    weather.style.display = settings.weather ? 'inline' : 'none';
+
+    console.log('updateOverlayVisibility() 完了');
+  } catch (error) {
+    console.error('updateOverlayVisibility()でエラー:', error);
   }
-
-  // 各要素の表示/非表示
-  dateLine.style.display = settings.date ? 'block' : 'none';
-  clock.style.display = settings.clock ? 'inline' : 'none';
-  weather.style.display = settings.weather ? 'inline' : 'none';
 }
 
 // ============================================
@@ -1403,22 +1420,7 @@ function restartSlideshow() {
   console.log(`スライドショー再起動完了: ${imageUrls.length}枚`);
 }
 
-// オーバーレイの表示/非表示を更新
-function updateOverlayVisibility() {
-  const clockEl = document.getElementById('clock');
-  const dateEl = document.getElementById('date-line');
-  const weatherEl = document.getElementById('weather');
-
-  if (clockEl) {
-    clockEl.style.display = settings.clock ? 'block' : 'none';
-  }
-  if (dateEl) {
-    dateEl.style.display = settings.date ? 'inline' : 'none';
-  }
-  if (weatherEl) {
-    weatherEl.style.display = settings.weather ? 'inline' : 'none';
-  }
-}
+// オーバーレイの表示/非表示を更新 - この関数は1054行目で定義済みのため削除
 
 // ============================================
 // イベントリスナー登録（モーダル）
@@ -1447,6 +1449,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+// ============================================
+// スクリーンセーバーからスライドショーへの初期化
+// ============================================
+
+async function initializeSlideshowFromScreensaver() {
+  try {
+    // 画像マニフェストを読み込み
+    if (!imageManifest) {
+      imageManifest = await loadImageManifest();
+      console.log('画像マニフェスト読み込み完了:', imageManifest);
+    }
+
+    // 画像URLリストを構築
+    const imageUrls = buildImageUrls(settings.albums);
+    console.log(`画像数: ${imageUrls.length}枚`);
+
+    if (imageUrls.length === 0) {
+      alert('選択されたアルバムに画像がありません');
+      return;
+    }
+
+    // スライドショーエンジンを初期化
+    slideshowEngine = new SlideshowEngine(imageUrls, settings);
+
+    // スライドショー開始
+    slideshowEngine.start();
+
+    console.log('スクリーンセーバーからスライドショーへの切替完了');
+  } catch (error) {
+    console.error('スライドショー初期化エラー:', error);
+    alert('スライドショーの初期化に失敗しました');
+  }
+}
 
 // ============================================
 // 表示モード切替機能
@@ -1487,8 +1523,12 @@ function toggleDisplayMode() {
     toggleBtn.textContent = '🎬';
     toggleBtn.title = 'スクリーンセーバーモードに切替';
 
-    // スライドショーを再開
-    if (slideshowEngine) {
+    // スライドショーエンジンが存在しない場合は初期化
+    if (!slideshowEngine) {
+      console.log('スライドショーエンジンを初期化します');
+      initializeSlideshowFromScreensaver();
+    } else {
+      // 既存のスライドショーを再開
       slideshowEngine.startTimer();
     }
   }
