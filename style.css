@@ -184,7 +184,7 @@ html, body {
   /* セーフエリアを除いた高さ */
   height: calc(100vh - env(safe-area-inset-bottom, 0px));
   height: calc(100dvh - env(safe-area-inset-bottom, 0px));
-  z-index: 10;
+  z-index: 1;
   background: #000;
   overflow: hidden;
 }
