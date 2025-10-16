@@ -918,10 +918,14 @@ function setupInputListeners() {
         slideshowEngine.prev();
       }
     } else if (Math.abs(diffX) < 20 && Math.abs(diffY) < 20) {
-      // タップ → コントロールバー表示/非表示トグル
+      // タップ → コントロールバー表示（3秒間保持）
       const controls = document.getElementById('controls');
       if (controls.classList.contains('hidden')) {
         showControls();
+        // 3秒後に自動非表示
+        setTimeout(() => {
+          hideControls();
+        }, 3000);
       } else {
         hideControls();
       }
