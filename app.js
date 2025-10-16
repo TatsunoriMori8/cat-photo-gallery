@@ -367,7 +367,7 @@ async function showSlideshowScreen() {
     const bgTiles = document.getElementById('background-tiles');
     bgTiles.style.opacity = '1.0';  // 明るく
     bgTiles.style.filter = 'none';  // ぼかしなし
-    bgTiles.style.zIndex = '50';    // 画像コンテナより前面に（image-container: 11）
+    bgTiles.style.zIndex = '15';    // 画像コンテナ(11)より前、オーバーレイ(100)より後ろ
 
     // 画像コンテナを非表示
     const imageContainer = document.getElementById('image-container');
@@ -1462,7 +1462,7 @@ function toggleDisplayMode() {
     slideshowScreen.style.background = 'transparent';
     bgTiles.style.opacity = '1.0';
     bgTiles.style.filter = 'none';
-    bgTiles.style.zIndex = '50';
+    bgTiles.style.zIndex = '15';
     imageContainer.style.display = 'none';
     toggleBtn.textContent = '🖼️';
     toggleBtn.title = 'スライドショーモードに切替';
