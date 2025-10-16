@@ -12,6 +12,7 @@ let settings = null;
 let slideshowEngine = null;
 let imageManifest = null;
 let isScreensaverMode = false; // スクリーンセーバーモードフラグ
+let screensaverWakeLock = null; // スクリーンセーバー用Wake Lock
 
 // ============================================
 // 初期化
@@ -384,6 +385,9 @@ async function showSlideshowScreen() {
 
     // キーボード・タッチ操作を設定
     setupInputListeners();
+
+    // スリープ防止を有効化
+    requestScreensaverWakeLock();
 
     return;
   }
@@ -1006,6 +1010,37 @@ function toggleControls() {
 }
 
 // ============================================
+// スクリーンセーバー用Wake Lock
+// ============================================
+
+async function requestScreensaverWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      screensaverWakeLock = await navigator.wakeLock.request('screen');
+      console.log('✅ スクリーンセーバー用Wake Lock有効化');
+
+      screensaverWakeLock.addEventListener('release', () => {
+        console.log('⚠️ スクリーンセーバー用Wake Lock解除');
+      });
+    } else {
+      console.log('⚠️ Wake Lock API非対応');
+    }
+  } catch (err) {
+    console.error('スクリーンセーバー用Wake Lock取得失敗:', err);
+  }
+}
+
+function releaseScreensaverWakeLock() {
+  if (screensaverWakeLock !== null) {
+    screensaverWakeLock.release()
+      .then(() => {
+        screensaverWakeLock = null;
+        console.log('スクリーンセーバー用Wake Lock解除完了');
+      });
+  }
+}
+
+// ============================================
 // Phase 3: オーバーレイ（時計・日付・天気）
 // ============================================
 
@@ -1511,7 +1546,11 @@ function toggleDisplayMode() {
     // スライドショーを停止
     if (slideshowEngine) {
       slideshowEngine.stopTimer();
+      slideshowEngine.releaseWakeLock(); // スライドショーのWake Lockを解除
     }
+
+    // スクリーンセーバー用Wake Lockを有効化
+    requestScreensaverWakeLock();
   } else {
     // スライドショーモードへ
     console.log('→ スライドショーモードに切替');
@@ -1523,6 +1562,9 @@ function toggleDisplayMode() {
     toggleBtn.textContent = '🎬';
     toggleBtn.title = 'スクリーンセーバーモードに切替';
 
+    // スクリーンセーバー用Wake Lockを解除
+    releaseScreensaverWakeLock();
+
     // スライドショーエンジンが存在しない場合は初期化
     if (!slideshowEngine) {
       console.log('スライドショーエンジンを初期化します');
@@ -1530,6 +1572,7 @@ function toggleDisplayMode() {
     } else {
       // 既存のスライドショーを再開
       slideshowEngine.startTimer();
+      slideshowEngine.requestWakeLock(); // スライドショーのWake Lockを再取得
     }
   }
 }
