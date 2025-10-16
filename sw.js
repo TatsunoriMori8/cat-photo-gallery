@@ -1,5 +1,5 @@
 // Service Worker for PWA
-const CACHE_NAME = 'photo-gallery-v5'; // バージョン更新！
+const CACHE_NAME = 'photo-gallery-v6'; // バージョン更新！
 const urlsToCache = [
   '.',
   'index.html',
