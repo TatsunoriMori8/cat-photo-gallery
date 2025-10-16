@@ -360,11 +360,14 @@ async function showSlideshowScreen() {
   if (isScreensaverMode) {
     console.log('スクリーンセーバーモード開始');
 
+    // スライドショー画面の背景を透明に
+    slideshowScreen.style.background = 'transparent';
+
     // 背景タイルを明るく表示
     const bgTiles = document.getElementById('background-tiles');
     bgTiles.style.opacity = '1.0';  // 明るく
     bgTiles.style.filter = 'none';  // ぼかしなし
-    bgTiles.style.zIndex = '1';     // 前面に
+    bgTiles.style.zIndex = '5';     // スライドショー画面より前面に
 
     // 画像コンテナを非表示
     const imageContainer = document.getElementById('image-container');
@@ -1447,6 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function toggleDisplayMode() {
   const bgTiles = document.getElementById('background-tiles');
   const imageContainer = document.getElementById('image-container');
+  const slideshowScreen = document.getElementById('slideshow-screen');
   const toggleBtn = document.getElementById('toggle-mode-btn');
 
   // モードを切り替え
@@ -1455,9 +1459,10 @@ function toggleDisplayMode() {
   if (isScreensaverMode) {
     // スクリーンセーバーモードへ
     console.log('→ スクリーンセーバーモードに切替');
+    slideshowScreen.style.background = 'transparent';
     bgTiles.style.opacity = '1.0';
     bgTiles.style.filter = 'none';
-    bgTiles.style.zIndex = '1';
+    bgTiles.style.zIndex = '5';
     imageContainer.style.display = 'none';
     toggleBtn.textContent = '🖼️';
     toggleBtn.title = 'スライドショーモードに切替';
@@ -1469,6 +1474,7 @@ function toggleDisplayMode() {
   } else {
     // スライドショーモードへ
     console.log('→ スライドショーモードに切替');
+    slideshowScreen.style.background = '#000';
     bgTiles.style.opacity = '0.4';
     bgTiles.style.filter = '';
     bgTiles.style.zIndex = '0';
