@@ -231,8 +231,14 @@ html, body {
   font-weight: 400;
 }
 
-.setup-modal #start-slideshow {
+.start-buttons {
+  display: flex;
+  gap: 16px;
   margin-bottom: 32px;
+}
+
+.start-buttons button {
+  flex: 1;
 }
 
 .section {

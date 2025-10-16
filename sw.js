@@ -1,5 +1,5 @@
 // Service Worker for PWA
-const CACHE_NAME = 'photo-gallery-v11'; // 風船アイコンに変更！
+const CACHE_NAME = 'photo-gallery-v12'; // 風船アイコン強制更新！
 const urlsToCache = [
   '.',
   'index.html',

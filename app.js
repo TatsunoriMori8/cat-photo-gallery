@@ -11,6 +11,7 @@ let config = null;
 let settings = null;
 let slideshowEngine = null;
 let imageManifest = null;
+let isScreensaverMode = false; // スクリーンセーバーモードフラグ
 
 // ============================================
 // 初期化
@@ -295,6 +296,13 @@ function setupEventListeners() {
 
   // スライドショー開始ボタン
   document.getElementById('start-slideshow').addEventListener('click', () => {
+    isScreensaverMode = false;
+    startSlideshow();
+  });
+
+  // スクリーンセーバー開始ボタン
+  document.getElementById('start-screensaver').addEventListener('click', () => {
+    isScreensaverMode = true;
     startSlideshow();
   });
 }
@@ -348,6 +356,33 @@ async function showSlideshowScreen() {
   setupScreen.classList.add('hidden');
   slideshowScreen.classList.remove('hidden');
 
+  // スクリーンセーバーモードの場合
+  if (isScreensaverMode) {
+    console.log('スクリーンセーバーモード開始');
+
+    // 背景タイルを明るく表示
+    const bgTiles = document.getElementById('background-tiles');
+    bgTiles.style.opacity = '1.0';  // 明るく
+    bgTiles.style.filter = 'none';  // ぼかしなし
+    bgTiles.style.zIndex = '1';     // 前面に
+
+    // 画像コンテナを非表示
+    const imageContainer = document.getElementById('image-container');
+    imageContainer.style.display = 'none';
+
+    // オーバーレイを初期化（時計・日付・天気）
+    initializeOverlay();
+
+    // コントロールバーのイベントリスナーを設定（モード切替用）
+    setupControlListeners();
+
+    // キーボード・タッチ操作を設定
+    setupInputListeners();
+
+    return;
+  }
+
+  // 通常のスライドショーモード
   try {
     // 画像マニフェストを読み込み
     imageManifest = await loadImageManifest();
@@ -837,6 +872,11 @@ function setupControlListeners() {
   // 設定ボタン（Phase 6で実装予定）
   document.getElementById('settings-btn').addEventListener('click', () => {
     console.log('設定モーダル（Phase 6で実装予定）');
+  });
+
+  // 表示モード切替ボタン
+  document.getElementById('toggle-mode-btn').addEventListener('click', () => {
+    toggleDisplayMode();
   });
 
   // フルスクリーンボタン
@@ -1397,7 +1437,50 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================
+// 表示モード切替機能
+// ============================================
+
+function toggleDisplayMode() {
+  const bgTiles = document.getElementById('background-tiles');
+  const imageContainer = document.getElementById('image-container');
+  const toggleBtn = document.getElementById('toggle-mode-btn');
+
+  // モードを切り替え
+  isScreensaverMode = !isScreensaverMode;
+
+  if (isScreensaverMode) {
+    // スクリーンセーバーモードへ
+    console.log('→ スクリーンセーバーモードに切替');
+    bgTiles.style.opacity = '1.0';
+    bgTiles.style.filter = 'none';
+    bgTiles.style.zIndex = '1';
+    imageContainer.style.display = 'none';
+    toggleBtn.textContent = '🖼️';
+    toggleBtn.title = 'スライドショーモードに切替';
+
+    // スライドショーを停止
+    if (slideshowEngine) {
+      slideshowEngine.stopTimer();
+    }
+  } else {
+    // スライドショーモードへ
+    console.log('→ スライドショーモードに切替');
+    bgTiles.style.opacity = '0.4';
+    bgTiles.style.filter = '';
+    bgTiles.style.zIndex = '0';
+    imageContainer.style.display = 'flex';
+    toggleBtn.textContent = '🎬';
+    toggleBtn.title = 'スクリーンセーバーモードに切替';
+
+    // スライドショーを再開
+    if (slideshowEngine) {
+      slideshowEngine.startTimer();
+    }
+  }
+}
+
+// ============================================
 // デバッグ用
 // ============================================
 
-console.log('app.js loaded - Phase 6 (モーダル + フルスクリーン + Fill Screen)');
+console.log('app.js loaded - Phase 7 (スクリーンセーバーモード)');
