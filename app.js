@@ -637,9 +637,7 @@ class SlideshowEngine {
 
   // ペアリングした画像を表示
   displayPairedImages(imageUrls) {
-    // 古い画像にフェードアウトを適用
-    const oldImages = Array.from(this.container.querySelectorAll('img'));
-    oldImages.forEach(oldImg => oldImg.classList.add('fade-out'));
+    console.log(`🖼️🖼️ displayPairedImages呼び出し: ${imageUrls.length}枚`);
 
     // pair-modeクラスを追加
     this.container.classList.add('pair-mode');
@@ -651,6 +649,8 @@ class SlideshowEngine {
       const img = document.createElement('img');
       img.src = url;
       img.alt = `Paired Image ${index + 1}`;
+      // ペアモードではvisibleクラスを最初から付与
+      img.classList.add('visible');
 
       img.onload = () => {
         console.log(`✅ ペア画像${index + 1}読み込み成功: ${url}`);
@@ -659,27 +659,31 @@ class SlideshowEngine {
 
         // 両方の画像がロードされたら表示
         if (loadedCount === imageUrls.length) {
-          // 新しい画像を追加
+          console.log(`✅ ペア画像すべてロード完了、表示開始`);
+
+          // 古い画像を即座に削除
+          const oldImages = this.container.querySelectorAll('img');
+          oldImages.forEach(oldImg => oldImg.remove());
+
+          // 新しい画像を追加（visibleクラス付き）
           newImages.forEach(newImg => {
             this.container.appendChild(newImg);
-          });
-
-          // 次フレームでフェードイン
-          requestAnimationFrame(() => {
-            newImages.forEach(newImg => {
-              newImg.classList.add('fade-in');
-            });
-
-            // フェード完了後に古い画像を削除
-            setTimeout(() => {
-              oldImages.forEach(oldImg => oldImg.remove());
-            }, 400); // CSSのtransition時間(0.4s)に合わせる
           });
         }
       };
 
       img.onerror = () => {
         console.error(`❌ ペア画像${index + 1}読み込みエラー: ${url}`);
+        // エラーでも続行
+        loadedCount++;
+        if (loadedCount === imageUrls.length && newImages.length > 0) {
+          // 読み込めた画像だけ表示
+          const oldImages = this.container.querySelectorAll('img');
+          oldImages.forEach(oldImg => oldImg.remove());
+          newImages.forEach(newImg => {
+            this.container.appendChild(newImg);
+          });
+        }
       };
     });
   }
