@@ -524,7 +524,7 @@ button {
   object-fit: contain;
   position: absolute;
   opacity: 0;
-  transition: opacity 0.2s ease-out;
+  transition: opacity 1.0s ease-in-out;
 }
 
 /* Cover mode - 画面いっぱいに表示 */

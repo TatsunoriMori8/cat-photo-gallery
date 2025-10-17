@@ -644,17 +644,36 @@ class SlideshowEngine {
     img.onload = () => {
       console.log(`✅ 画像読み込み成功: ${imageUrl}`);
 
-      // 古い画像を即座に削除
+      // 古い画像を取得
       const oldImages = this.container.querySelectorAll('img');
-      oldImages.forEach(oldImg => oldImg.remove());
 
-      // 新しい画像を追加
-      this.container.appendChild(img);
+      // 古い画像がある場合は先にフェードアウト
+      if (oldImages.length > 0) {
+        // 古い画像をフェードアウト
+        oldImages.forEach(oldImg => {
+          oldImg.classList.remove('visible');
+        });
 
-      // 次のフレームでフェードイン
-      requestAnimationFrame(() => {
-        img.classList.add('visible');
-      });
+        // フェードアウト完了後(1秒後)に新しい画像を追加してフェードイン
+        setTimeout(() => {
+          // 古い画像を削除
+          oldImages.forEach(oldImg => oldImg.remove());
+
+          // 新しい画像を追加（透明状態）
+          this.container.appendChild(img);
+
+          // 次のフレームでフェードイン
+          requestAnimationFrame(() => {
+            img.classList.add('visible');
+          });
+        }, 1000);
+      } else {
+        // 古い画像がない場合（最初の画像）は即座に表示
+        this.container.appendChild(img);
+        requestAnimationFrame(() => {
+          img.classList.add('visible');
+        });
+      }
     };
 
     // エラー時の処理
@@ -725,12 +744,10 @@ class SlideshowEngine {
   displayPairedImages(imageUrls) {
     console.log(`🖼️🖼️ displayPairedImages呼び出し: ${imageUrls.length}枚`);
 
-    // pair-modeクラスを追加
-    this.container.classList.add('pair-mode');
-
     let loadedCount = 0;
     const newImages = [];
 
+    // 先に両方の画像を読み込む（まだDOMには追加しない）
     imageUrls.forEach((url, index) => {
       const img = document.createElement('img');
       img.src = url;
@@ -746,22 +763,55 @@ class SlideshowEngine {
         if (loadedCount === imageUrls.length) {
           console.log(`✅ ペア画像すべてロード完了、表示開始`);
 
-          // 古い画像を先に削除
+          // 古い画像を取得
           const oldImages = this.container.querySelectorAll('img');
-          oldImages.forEach(oldImg => oldImg.remove());
 
-          // 新しい画像を追加（透明状態）
-          newImages.forEach(newImg => {
-            this.container.appendChild(newImg);
-          });
-
-          // 次のフレームでフェードイン
-          requestAnimationFrame(() => {
-            newImages.forEach(newImg => {
-              newImg.classList.add('visible');
-              newImg.style.opacity = '1';
+          // 古い画像がある場合は先にフェードアウト
+          if (oldImages.length > 0) {
+            // 古い画像をフェードアウト
+            oldImages.forEach(oldImg => {
+              oldImg.classList.remove('visible');
+              oldImg.style.opacity = '0';
             });
-          });
+
+            // フェードアウト完了後(1秒後)に新しい画像を追加してフェードイン
+            setTimeout(() => {
+              // 古い画像を削除
+              oldImages.forEach(oldImg => oldImg.remove());
+
+              // pair-modeクラスを追加
+              this.container.classList.add('pair-mode');
+
+              // 新しい画像を追加（透明状態）- 両方を同時に追加
+              newImages.forEach(newImg => {
+                this.container.appendChild(newImg);
+              });
+
+              // 次のフレームでフェードイン - 両方を同時に
+              requestAnimationFrame(() => {
+                newImages.forEach(newImg => {
+                  newImg.classList.add('visible');
+                  newImg.style.opacity = '1';
+                });
+              });
+            }, 1000);
+          } else {
+            // 古い画像がない場合（最初の画像）は即座に表示
+            // pair-modeクラスを追加
+            this.container.classList.add('pair-mode');
+
+            // 両方を同時に追加
+            newImages.forEach(newImg => {
+              this.container.appendChild(newImg);
+            });
+
+            requestAnimationFrame(() => {
+              newImages.forEach(newImg => {
+                newImg.classList.add('visible');
+                newImg.style.opacity = '1';
+              });
+            });
+          }
         }
       };
 
@@ -769,21 +819,52 @@ class SlideshowEngine {
         console.error(`❌ ペア画像${index + 1}読み込みエラー: ${url}`);
         loadedCount++;
         if (loadedCount === imageUrls.length && newImages.length > 0) {
-          // 古い画像を削除
+          // 古い画像を取得
           const oldImages = this.container.querySelectorAll('img');
-          oldImages.forEach(oldImg => oldImg.remove());
 
-          // 読み込めた画像だけ表示
-          newImages.forEach(newImg => {
-            this.container.appendChild(newImg);
-          });
-
-          requestAnimationFrame(() => {
-            newImages.forEach(newImg => {
-              newImg.classList.add('visible');
-              newImg.style.opacity = '1';
+          // 古い画像がある場合は先にフェードアウト
+          if (oldImages.length > 0) {
+            // 古い画像をフェードアウト
+            oldImages.forEach(oldImg => {
+              oldImg.classList.remove('visible');
+              oldImg.style.opacity = '0';
             });
-          });
+
+            // フェードアウト完了後に新しい画像を表示
+            setTimeout(() => {
+              // 古い画像を削除
+              oldImages.forEach(oldImg => oldImg.remove());
+
+              // pair-modeクラスを追加
+              this.container.classList.add('pair-mode');
+
+              // 読み込めた画像だけ追加
+              newImages.forEach(newImg => {
+                this.container.appendChild(newImg);
+              });
+
+              // 次のフレームでフェードイン
+              requestAnimationFrame(() => {
+                newImages.forEach(newImg => {
+                  newImg.classList.add('visible');
+                  newImg.style.opacity = '1';
+                });
+              });
+            }, 1000);
+          } else {
+            // 古い画像がない場合は即座に表示
+            this.container.classList.add('pair-mode');
+
+            newImages.forEach(newImg => {
+              this.container.appendChild(newImg);
+            });
+            requestAnimationFrame(() => {
+              newImages.forEach(newImg => {
+                newImg.classList.add('visible');
+                newImg.style.opacity = '1';
+              });
+            });
+          }
         }
       };
     });
