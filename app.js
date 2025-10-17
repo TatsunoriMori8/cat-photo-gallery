@@ -611,8 +611,7 @@ class SlideshowEngine {
     console.log(`   fillScreen: ${this.settings.fillScreen}`);
     console.log(`   portraitPairing: ${this.settings.portraitPairing}`);
 
-    // 古い画像を保持したまま処理を続ける
-    this.container.classList.remove('pair-mode');
+    // pair-modeクラスの削除は、古い画像が消えた後に行うため、ここでは削除しない
 
     // Fill Screen モードの適用
     if (this.settings.fillScreen) {
@@ -659,6 +658,9 @@ class SlideshowEngine {
           // 古い画像を削除
           oldImages.forEach(oldImg => oldImg.remove());
 
+          // pair-modeクラスを削除（1枚表示なので）
+          this.container.classList.remove('pair-mode');
+
           // 新しい画像を追加（透明状態）
           this.container.appendChild(img);
 
@@ -669,6 +671,7 @@ class SlideshowEngine {
         }, 1000);
       } else {
         // 古い画像がない場合（最初の画像）は即座に表示
+        this.container.classList.remove('pair-mode');
         this.container.appendChild(img);
         requestAnimationFrame(() => {
           img.classList.add('visible');
@@ -752,7 +755,7 @@ class SlideshowEngine {
       const img = document.createElement('img');
       img.src = url;
       img.alt = `Paired Image ${index + 1}`;
-      img.style.opacity = '0';
+      // opacityはCSSのtransitionに任せる（style.opacityは使わない）
 
       img.onload = () => {
         console.log(`✅ ペア画像${index + 1}読み込み成功: ${url}`);
@@ -771,7 +774,6 @@ class SlideshowEngine {
             // 古い画像をフェードアウト
             oldImages.forEach(oldImg => {
               oldImg.classList.remove('visible');
-              oldImg.style.opacity = '0';
             });
 
             // フェードアウト完了後(1秒後)に新しい画像を追加してフェードイン
@@ -791,7 +793,6 @@ class SlideshowEngine {
               requestAnimationFrame(() => {
                 newImages.forEach(newImg => {
                   newImg.classList.add('visible');
-                  newImg.style.opacity = '1';
                 });
               });
             }, 1000);
@@ -808,7 +809,6 @@ class SlideshowEngine {
             requestAnimationFrame(() => {
               newImages.forEach(newImg => {
                 newImg.classList.add('visible');
-                newImg.style.opacity = '1';
               });
             });
           }
@@ -827,7 +827,6 @@ class SlideshowEngine {
             // 古い画像をフェードアウト
             oldImages.forEach(oldImg => {
               oldImg.classList.remove('visible');
-              oldImg.style.opacity = '0';
             });
 
             // フェードアウト完了後に新しい画像を表示
@@ -847,7 +846,6 @@ class SlideshowEngine {
               requestAnimationFrame(() => {
                 newImages.forEach(newImg => {
                   newImg.classList.add('visible');
-                  newImg.style.opacity = '1';
                 });
               });
             }, 1000);
@@ -861,7 +859,6 @@ class SlideshowEngine {
             requestAnimationFrame(() => {
               newImages.forEach(newImg => {
                 newImg.classList.add('visible');
-                newImg.style.opacity = '1';
               });
             });
           }

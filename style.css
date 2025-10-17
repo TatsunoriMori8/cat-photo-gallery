@@ -553,9 +553,9 @@ button {
   position: static !important;
   max-height: 100%;
   max-width: 48%;
-  opacity: 1 !important;
   flex: 1;
   object-fit: contain;
+  /* opacityはvisibleクラスで制御するため、!importantを削除 */
 }
 
 /* Portrait Pairing + Fill Screen Mode - 2枚表示しつつ画面いっぱいに */
