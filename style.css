@@ -132,12 +132,12 @@ html, body {
 
 .tile-row.scroll-left {
   animation-name: scroll-left;
-  animation-duration: 1200s; /* 20分 - 超ゆっくり */
+  animation-duration: 3600s; /* 1時間 - 超ゆっくり */
 }
 
 .tile-row.scroll-right {
   animation-name: scroll-right;
-  animation-duration: 1200s; /* 20分 - 超ゆっくり */
+  animation-duration: 3600s; /* 1時間 - 超ゆっくり */
 }
 
 .tile-item {

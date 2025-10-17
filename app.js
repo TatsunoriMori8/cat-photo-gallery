@@ -159,7 +159,7 @@ async function generateBackgroundTiles() {
 
   // 画面の高さに応じて行数を計算（1行 = 200px + 8px margin）
   const rowHeight = 208;
-  const numRows = Math.ceil(window.innerHeight / rowHeight) + 1;
+  const numRows = Math.ceil(window.innerHeight / rowHeight) + 3; // +3で余分に行を追加
 
   // タイルを2倍にして無限スクロール用に複製
   const doubledImages = [...allImages, ...allImages];
